@@ -1,60 +1,63 @@
-import gymnasium as gym
 import os
+import gymnasium as gym
 import ale_py
+import pygame
+from my_arcade.controls import GAME_CONTROLS
+from my_arcade.sound import SoundManager
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+def initialize_ale():
+    try:
+        # Register ALE environments with gymnasium
+        gym.register_envs(ale_py)
+        return True
+    except Exception as e:
+        print(f"Error initializing ALE: {e}")
+        print("\nPlease ensure you have installed the required packages:")
+        print("pip install ale-py")
+        print("pip install gymnasium[atari]")
+        print("pip install 'gymnasium[accept-rom-license]'")
+        return False
+
 def get_available_games():
     games = {}
-    game_list = [
-        ('ALE/SpaceInvaders-v5', 'Space Invaders'),
-        ('ALE/Pong-v5', 'Pong'),
-        ('ALE/Breakout-v5', 'Breakout'),
-        ('ALE/Asteroids-v5', 'Asteroids'),
-        ('ALE/MsPacman-v5', 'Ms. Pacman'),
-        ('ALE/BattleZone-v5', 'Battle Zone'),
-        ('ALE/Boxing-v5', 'Boxing'),
-        ('ALE/DemonAttack-v5', 'Demon Attack'),
-        ('ALE/DoubleDunk-v5', 'Double Dunk'),
-        ('ALE/Enduro-v5', 'Enduro'),
-        ('ALE/DonkeyKong-v5', 'Donkey Kong'),
-        ('ALE/KungFuMaster-v5', 'Kung Fu Master'),
-        ('ALE/MarioBros-v5', 'Mario Bros')
-    ]
-    
-    for i, (env_id, name) in enumerate(game_list, 1):
-        games[str(i)] = {
-            'name': name,
-            'id': env_id
+    for i, game in enumerate(['SpaceInvaders', 'Pong', 'Breakout', 'Asteroids', 
+                            'Pacman', 'BattleZone', 'Boxing', 'DemonAttack', 
+                            'DoubleDunk', 'Enduro', 'DonkeyKong', 'KungFuMaster', 'MarioBros']):
+        games[str(i + 1)] = {
+            'id': f'ALE/{game}-v5',
+            'name': game
         }
     return games
 
 def display_menu(games):
-    print("\n=== Atari Arcade ===")
-    print("\nAvailable Games:")
-    for num, game in games.items():
-        print(f"{num}. {game['name']}")
+    print("\nPython Arcade Menu")
+    print("=================")
+    for key, game in games.items():
+        print(f"{key}. {game['name']}")
     print("\nQ. Quit")
-    return input("\nSelect a game number (or Q to quit): ").upper()
+    return input("\nSelect a game (1-13, Q to quit): ").upper()
 
 def play_game(game_id, game_name):
     try:
-        import pygame
         pygame.init()
+        sound_manager = SoundManager()
+        sound_manager.load_game_sounds(game_name)
         
-        # Create environment with both human rendering and RGB array
-        env = gym.make(game_id, render_mode="human", full_action_space=False)
-        _, info = env.reset()
+        # Create environment with human rendering and frameskip=1 for better control
+        env = gym.make(game_id, render_mode="human", frameskip=1)
+        observation, info = env.reset()
         
-        # Get the legal actions from the ALE environment
-        legal_actions = env.unwrapped.ale.getLegalActionSet()
-        action_meanings = env.unwrapped.get_action_meanings()
+        # Get game-specific controls
+        game_controls = GAME_CONTROLS.get(game_name, {}).get('controls', {})
         
         print(f"\nPlaying {game_name}")
         print("Controls:")
-        print("Available actions:", action_meanings)
-        print("Press ESC to return to menu")
+        for key, (action, desc) in game_controls.items():
+            print(f"{pygame.key.name(key)}: {desc}")
+        print("ESC: Return to menu")
         
         clock = pygame.time.Clock()
         running = True
@@ -70,67 +73,269 @@ def play_game(game_id, game_name):
             if keys[pygame.K_ESCAPE]:
                 running = False
             
-            # Map keyboard input to legal actions
-            action = 0  # NOOP is usually 0
+            # Default to NOOP
+            action = 0  # NOOP
             
-            # Basic movements
-            if keys[pygame.K_LEFT] and keys[pygame.K_UP] and 'UPLEFT' in action_meanings:
-                action = legal_actions[action_meanings.index('UPLEFT')]
-            elif keys[pygame.K_RIGHT] and keys[pygame.K_UP] and 'UPRIGHT' in action_meanings:
-                action = legal_actions[action_meanings.index('UPRIGHT')]
-            elif keys[pygame.K_LEFT] and keys[pygame.K_DOWN] and 'DOWNLEFT' in action_meanings:
-                action = legal_actions[action_meanings.index('DOWNLEFT')]
-            elif keys[pygame.K_RIGHT] and keys[pygame.K_DOWN] and 'DOWNRIGHT' in action_meanings:
-                action = legal_actions[action_meanings.index('DOWNRIGHT')]
-            # Combined fire actions
-            elif keys[pygame.K_SPACE]:
-                if keys[pygame.K_UP] and 'UPFIRE' in action_meanings:
-                    action = legal_actions[action_meanings.index('UPFIRE')]
-                elif keys[pygame.K_RIGHT] and 'RIGHTFIRE' in action_meanings:
-                    action = legal_actions[action_meanings.index('RIGHTFIRE')]
-                elif keys[pygame.K_LEFT] and 'LEFTFIRE' in action_meanings:
-                    action = legal_actions[action_meanings.index('LEFTFIRE')]
-                elif keys[pygame.K_DOWN] and 'DOWNFIRE' in action_meanings:
-                    action = legal_actions[action_meanings.index('DOWNFIRE')]
-                elif 'FIRE' in action_meanings:
-                    action = legal_actions[action_meanings.index('FIRE')]
-            # Single direction movements
-            elif keys[pygame.K_LEFT] and 'LEFT' in action_meanings:
-                action = legal_actions[action_meanings.index('LEFT')]
-            elif keys[pygame.K_RIGHT] and 'RIGHT' in action_meanings:
-                action = legal_actions[action_meanings.index('RIGHT')]
-            elif keys[pygame.K_UP] and 'UP' in action_meanings:
-                action = legal_actions[action_meanings.index('UP')]
-            elif keys[pygame.K_DOWN] and 'DOWN' in action_meanings:
-                action = legal_actions[action_meanings.index('DOWN')]
+            # Map keyboard input to ALE actions based on game
+            if game_name == 'SpaceInvaders':
+                if keys[pygame.K_LEFT]:
+                    action = 3  # LEFT
+                elif keys[pygame.K_RIGHT]:
+                    action = 2  # RIGHT
+                
+                # Handle fire combinations
+                if keys[pygame.K_SPACE]:
+                    if keys[pygame.K_LEFT]:
+                        action = 5  # LEFTFIRE
+                    elif keys[pygame.K_RIGHT]:
+                        action = 4  # RIGHTFIRE
+                    else:
+                        action = 1  # FIRE
+            elif game_name == 'KungFuMaster':
+                # Basic movements
+                if keys[pygame.K_UP]:
+                    action = 1  # UP
+                elif keys[pygame.K_RIGHT]:
+                    action = 2  # RIGHT
+                elif keys[pygame.K_LEFT]:
+                    action = 3  # LEFT
+                elif keys[pygame.K_DOWN]:
+                    action = 4  # DOWN
+                
+                # Diagonal movements
+                if keys[pygame.K_DOWN] and keys[pygame.K_RIGHT]:
+                    action = 5  # DOWNRIGHT
+                elif keys[pygame.K_DOWN] and keys[pygame.K_LEFT]:
+                    action = 6  # DOWNLEFT
+                
+                # Attack moves
+                if keys[pygame.K_d]:
+                    action = 7  # RIGHTFIRE
+                elif keys[pygame.K_a]:
+                    action = 8  # LEFTFIRE
+                elif keys[pygame.K_DOWN] and keys[pygame.K_SPACE]:
+                    action = 9  # DOWNFIRE
+                elif keys[pygame.K_e]:
+                    action = 10  # UPRIGHTFIRE
+                elif keys[pygame.K_q]:
+                    action = 11  # UPLEFTFIRE
+                elif keys[pygame.K_c]:
+                    action = 12  # DOWNRIGHTFIRE
+                elif keys[pygame.K_z]:
+                    action = 13  # DOWNLEFTFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 7  # Default attack (RIGHTFIRE)
+            elif game_name == 'Asteroids':
+                # Basic movements
+                if keys[pygame.K_UP]:
+                    action = 2  # UP (Thrust)
+                elif keys[pygame.K_RIGHT]:
+                    action = 3  # RIGHT (Rotate right)
+                elif keys[pygame.K_LEFT]:
+                    action = 4  # LEFT (Rotate left)
+                elif keys[pygame.K_DOWN]:
+                    action = 5  # DOWN (Reverse thrust)
+                
+                # Diagonal movements
+                if keys[pygame.K_e]:
+                    action = 6  # UPRIGHT
+                elif keys[pygame.K_q]:
+                    action = 7  # UPLEFT
+                
+                # Fire combinations
+                if keys[pygame.K_w]:
+                    action = 8  # UPFIRE
+                elif keys[pygame.K_d]:
+                    action = 9  # RIGHTFIRE
+                elif keys[pygame.K_a]:
+                    action = 10  # LEFTFIRE
+                elif keys[pygame.K_s]:
+                    action = 11  # DOWNFIRE
+                elif keys[pygame.K_r]:
+                    action = 12  # UPRIGHTFIRE
+                elif keys[pygame.K_f]:
+                    action = 13  # UPLEFTFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE
+            elif game_name == 'Pong':
+                # Basic movements
+                if keys[pygame.K_UP]:
+                    action = 2  # RIGHT (Move Up)
+                elif keys[pygame.K_DOWN]:
+                    action = 3  # LEFT (Move Down)
+                
+                # Serve combinations
+                if keys[pygame.K_w]:
+                    action = 4  # RIGHTFIRE (Move up and serve)
+                elif keys[pygame.K_s]:
+                    action = 5  # LEFTFIRE (Move down and serve)
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE (Serve)
+            elif game_name == 'Breakout':
+                # Basic movements
+                if keys[pygame.K_LEFT]:
+                    action = 3  # LEFT
+                elif keys[pygame.K_RIGHT]:
+                    action = 2  # RIGHT
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE (Launch ball)
+            elif game_name == 'BattleZone':
+                # Basic movements
+                if keys[pygame.K_UP]:
+                    action = 2  # UP (Forward)
+                elif keys[pygame.K_RIGHT]:
+                    action = 3  # RIGHT
+                elif keys[pygame.K_LEFT]:
+                    action = 4  # LEFT
+                elif keys[pygame.K_DOWN]:
+                    action = 5  # DOWN (Backward)
+                
+                # Diagonal movements
+                if keys[pygame.K_e]:
+                    action = 6  # UPRIGHT
+                elif keys[pygame.K_q]:
+                    action = 7  # UPLEFT
+                elif keys[pygame.K_c]:
+                    action = 8  # DOWNRIGHT
+                elif keys[pygame.K_z]:
+                    action = 9  # DOWNLEFT
+                
+                # Fire combinations
+                if keys[pygame.K_w]:
+                    action = 10  # UPFIRE
+                elif keys[pygame.K_d]:
+                    action = 11  # RIGHTFIRE
+                elif keys[pygame.K_a]:
+                    action = 12  # LEFTFIRE
+                elif keys[pygame.K_s]:
+                    action = 13  # DOWNFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE
+            elif game_name == 'Boxing':
+                # Basic movements
+                if keys[pygame.K_UP]:
+                    action = 2  # UP
+                elif keys[pygame.K_RIGHT]:
+                    action = 3  # RIGHT
+                elif keys[pygame.K_LEFT]:
+                    action = 4  # LEFT
+                elif keys[pygame.K_DOWN]:
+                    action = 5  # DOWN
+                
+                # Diagonal movements
+                if keys[pygame.K_e]:
+                    action = 6  # UPRIGHT
+                elif keys[pygame.K_q]:
+                    action = 7  # UPLEFT
+                elif keys[pygame.K_c]:
+                    action = 8  # DOWNRIGHT
+                elif keys[pygame.K_z]:
+                    action = 9  # DOWNLEFT
+                
+                # Punch combinations
+                if keys[pygame.K_w]:
+                    action = 10  # UPFIRE
+                elif keys[pygame.K_d]:
+                    action = 11  # RIGHTFIRE
+                elif keys[pygame.K_a]:
+                    action = 12  # LEFTFIRE
+                elif keys[pygame.K_s]:
+                    action = 13  # DOWNFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE (basic punch)
+            elif game_name == 'DemonAttack':
+                # Basic movements
+                if keys[pygame.K_LEFT]:
+                    action = 3  # LEFT
+                elif keys[pygame.K_RIGHT]:
+                    action = 2  # RIGHT
+                
+                # Fire combinations
+                if keys[pygame.K_a]:
+                    action = 5  # LEFTFIRE
+                elif keys[pygame.K_d]:
+                    action = 4  # RIGHTFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE
+            elif game_name == 'DoubleDunk':
+                # Basic movements
+                if keys[pygame.K_UP]:
+                    action = 2  # UP
+                elif keys[pygame.K_RIGHT]:
+                    action = 3  # RIGHT
+                elif keys[pygame.K_LEFT]:
+                    action = 4  # LEFT
+                elif keys[pygame.K_DOWN]:
+                    action = 5  # DOWN
+                
+                # Diagonal movements
+                if keys[pygame.K_e]:
+                    action = 6  # UPRIGHT
+                elif keys[pygame.K_q]:
+                    action = 7  # UPLEFT
+                elif keys[pygame.K_c]:
+                    action = 8  # DOWNRIGHT
+                elif keys[pygame.K_z]:
+                    action = 9  # DOWNLEFT
+                
+                # Shoot combinations
+                if keys[pygame.K_w]:
+                    action = 10  # UPFIRE
+                elif keys[pygame.K_d]:
+                    action = 11  # RIGHTFIRE
+                elif keys[pygame.K_a]:
+                    action = 12  # LEFTFIRE
+                elif keys[pygame.K_s]:
+                    action = 13  # DOWNFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE (basic shoot/select)
+            elif game_name == 'Enduro':
+                # Basic movements
+                if keys[pygame.K_RIGHT]:
+                    action = 2  # RIGHT
+                elif keys[pygame.K_LEFT]:
+                    action = 3  # LEFT
+                elif keys[pygame.K_DOWN]:
+                    action = 4  # DOWN (Brake)
+                
+                # Combined movements
+                if keys[pygame.K_c]:
+                    action = 5  # DOWNRIGHT
+                elif keys[pygame.K_z]:
+                    action = 6  # DOWNLEFT
+                
+                # Acceleration combinations
+                if keys[pygame.K_d]:
+                    action = 7  # RIGHTFIRE
+                elif keys[pygame.K_a]:
+                    action = 8  # LEFTFIRE
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE (Accelerate)
+            else:
+                # Default controls for other games
+                if keys[pygame.K_LEFT]:
+                    action = 3  # LEFT
+                elif keys[pygame.K_RIGHT]:
+                    action = 2  # RIGHT
+                elif keys[pygame.K_UP]:
+                    action = 2  # UP
+                elif keys[pygame.K_DOWN]:
+                    action = 5  # DOWN
+                elif keys[pygame.K_SPACE]:
+                    action = 1  # FIRE
             
-            _, reward, terminated, truncated, info = env.step(action)
+            # Execute action
+            _, _, terminated, truncated, _ = env.step(action)
             
             if terminated or truncated:
-                print(f"Game Over! Score: {info.get('score', 0)}")
-                print(f"Final Reward: {reward}")
-                break
+                _, _ = env.reset()
         
         env.close()
         pygame.quit()
-        input("\nPress Enter to continue...")
         
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error playing game: {e}")
         input("Press Enter to continue...")
-
-def initialize_ale():
-    try:
-        # Register ALE environments with gymnasium
-        gym.register_envs(ale_py)
-        return True
-    except Exception as e:
-        print(f"Error initializing ALE: {e}")
-        print("\nPlease ensure you have installed the required packages:")
-        print("pip install ale-py")
-        print("pip install gymnasium[atari]")
-        print("pip install 'gymnasium[accept-rom-license]'")
-        return False
 
 def main():
     if not initialize_ale():
