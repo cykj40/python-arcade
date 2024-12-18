@@ -20,6 +20,7 @@ pip install ale-py
 pip install gymnasium[atari]
 pip install 'gymnasium[accept-rom-license]'
 pip install pygame
+pip install simpleaudio
 ```
 
 ## Running the Games
@@ -34,31 +35,89 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 python -m my_arcade.test_env
 ```
 
-## Controls
-- Arrow keys: Movement
-- Space: Fire/Action
+## Global Controls
 - ESC: Return to menu
 - Q: Quit game
 
 ## Game-Specific Controls
 
-### Donkey Kong
+### Space Invaders
+- Left/Right: Move
+- Space: Fire
+- A/D: Move and fire
+
+### Pong
+- Up/Down: Move paddle
+- Space: Serve ball
+- W/S: Move and serve
+
+### Breakout
+- Left/Right: Move paddle
+- Space: Launch ball
+
+### Asteroids
+- Arrow keys: Rotate and thrust
+- Space: Fire
+- E/Q: Thrust diagonally
+- W: Thrust and fire
+- A/D: Rotate and fire
+- S: Reverse thrust and fire
+- R/F: Diagonal thrust and fire
+
+### BattleZone
+- Arrow keys: Tank movement
+- Space: Fire cannon
+- E/Q: Forward diagonal movement
+- C/Z: Backward diagonal movement
+- W/S: Forward/Backward with fire
+- A/D: Rotate and fire
+
+### Boxing
+- Arrow keys: Movement
+- Space: Punch
+- E/Q: Move up-diagonally
+- C/Z: Move down-diagonally
+- W/A/S/D: Move and punch
+
+### DemonAttack
+- Left/Right: Move
+- Space: Fire laser
+- A/D: Move and fire
+
+### DoubleDunk
+- Arrow keys: Movement
+- Space: Shoot/Select play
+- E/Q: Move up-diagonally
+- C/Z: Move down-diagonally
+- W/A/S/D: Move and shoot
+
+### Enduro
+- Left/Right: Steer
+- Down: Brake
+- Space: Accelerate
+- C/Z: Brake and steer
+- A/D: Accelerate and steer
+
+### DonkeyKong
 - Left/Right: Move
 - Space: Jump
 - Enter: Start/Hammer
 
-### Kung Fu Master
+### KungFuMaster
 - Left/Right: Move
 - Up: Jump
 - Down: Crouch
 - Space: Punch/Kick
-- A: Left Attack
-- D: Right Attack
+- A/D: Directional attacks
+- Q/E: Jump attacks
+- Z/C: Crouch attacks
 
-### Mario Bros
-- Left/Right: Move
+### MarioBros
+- Arrow keys: Movement
 - Space: Jump
-- Enter: Start
+- Q/E: Jump diagonally
+- Z/C: Crouch and move
+- W/A/S/D: Combined moves
 
 ## Dependencies
 - ALE (Arcade Learning Environment) - GPL-2.0 License
