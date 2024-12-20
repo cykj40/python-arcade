@@ -1,5 +1,6 @@
 ale-py
 gymnasium[atari]
-gymnasium[accept-rom-license]
 pygame
 simpleaudio 
+numpy
+autorom[accept-rom-license]

@@ -1,20 +1,27 @@
 from gymnasium.envs.registration import register
 
-# Register custom wrapped versions of Atari games if needed
+# Only include games with good human controls
 games = [
-    'SpaceInvaders',
-    'Pong',
-    'Breakout',
-    'Asteroids',
-    'MsPacman',
-    'BattleZone',
-    'Boxing',
-    'DemonAttack',
-    'DoubleDunk',
-    'Enduro',
-    'DonkeyKong',
-    'KungFuMaster',
-    'MarioBros'
+    'SpaceInvaders',    # Classic shooter
+    'Breakout',         # Paddle game
+    'Pong',            # Paddle game
+    'DonkeyKong',      # Platform
+    'MarioBros',       # Platform
+    'KungFuMaster',    # Fighting
+    'Boxing',          # Fighting
+    'BattleZone',      # 3D Tank
+    'Asteroids',       # Space shooter
+    'DemonAttack',     # Space shooter
+    'Enduro',          # Racing
+    'DoubleDunk',      # Sports
+    'Pacman',          # Maze
+    'MsPacman',        # Maze
+    'Phoenix',         # Space shooter
+    'Qbert',           # Platform
+    'RiverRaid',       # Shooter
+    'Seaquest',        # Underwater
+    'Tennis',          # Sports
+    'VideoPinball'     # Pinball
 ]
 
 for game in games:
