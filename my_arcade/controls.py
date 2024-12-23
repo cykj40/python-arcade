@@ -12,7 +12,8 @@ GAME_CONTROLS = {
         'controls': {
             pygame.K_LEFT: ('LEFT', 'Move paddle left'),
             pygame.K_RIGHT: ('RIGHT', 'Move paddle right'),
-            pygame.K_RETURN: ('FIRE', 'Start game/Serve ball')
+            pygame.K_SPACE: ('FIRE', 'Launch ball'),
+            pygame.K_RETURN: ('START', 'Start game')
         }
     },
     'Pong': {
@@ -62,6 +63,40 @@ GAME_CONTROLS = {
             pygame.K_RIGHT: ('RIGHT', 'Move right'),
             pygame.K_SPACE: ('JUMP', 'Jump'),
             pygame.K_RETURN: ('START', 'Start game')
+        }
+    },
+    'KungFuMaster': {
+        'controls': {
+            pygame.K_LEFT: ('LEFT', 'Move left'),
+            pygame.K_RIGHT: ('RIGHT', 'Move right'),
+            pygame.K_UP: ('UP', 'Jump'),
+            pygame.K_DOWN: ('DOWN', 'Crouch'),
+            pygame.K_x: ('PUNCH', 'Punch'),
+            pygame.K_z: ('KICK', 'Kick')
+        }
+    },
+    'DemonAttack': {
+        'controls': {
+            pygame.K_LEFT: ('LEFT', 'Move left'),
+            pygame.K_RIGHT: ('RIGHT', 'Move right'),
+            pygame.K_SPACE: ('FIRE', 'Fire laser')
+        }
+    },
+    'Enduro': {
+        'controls': {
+            pygame.K_LEFT: ('LEFT', 'Steer left'),
+            pygame.K_RIGHT: ('RIGHT', 'Steer right'),
+            pygame.K_SPACE: ('UP', 'Accelerate'),
+            pygame.K_DOWN: ('DOWN', 'Brake')
+        }
+    },
+    'DoubleDunk': {
+        'controls': {
+            pygame.K_LEFT: ('LEFT', 'Move left'),
+            pygame.K_RIGHT: ('RIGHT', 'Move right'),
+            pygame.K_SPACE: ('FIRE', 'Shoot/Pass'),
+            pygame.K_UP: ('UP', 'Move up'),
+            pygame.K_DOWN: ('DOWN', 'Move down')
         }
     }
 }

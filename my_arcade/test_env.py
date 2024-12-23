@@ -1,11 +1,9 @@
 import os
-from turtle import Terminator
 import gymnasium as gym
 import ale_py
 import pygame
 from my_arcade.controls import GAME_CONTROLS
 from my_arcade.sound import SoundManager
-from my_arcade.render_utils import display_arr
 from my_arcade.utils import get_action_number
 
 def clear_screen():
@@ -55,7 +53,9 @@ def play_game(game_id, game_name):
         # Print available actions before game starts
         temp_env = gym.make(game_id)
         print(f"\nAvailable actions for {game_name}:")
-        print(temp_env.unwrapped.get_action_meanings())
+        actions = temp_env.unwrapped.get_action_meanings()
+        for i, action in enumerate(actions):
+            print(f"{i}: {action}")
         temp_env.close()
         
         # Create game environment
@@ -85,29 +85,57 @@ def play_game(game_id, game_name):
         
         clock = pygame.time.Clock()
         running = True
+        last_action_time = 0
+        action_cooldown = 16  # Changed from 50 to 16 (matches 60fps)
         
         while running:
             clock.tick(60)
+            current_time = pygame.time.get_ticks()
+            frame_start = pygame.time.get_ticks()
             
             # Handle events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     running = False
             
-            # Get pressed keys and map to action
+            # Get pressed keys and map to action with debouncing
             keys = pygame.key.get_pressed()
             action = 0  # NOOP default
             
-            # Check controls and update action
-            for key, (action_name, _) in controls.items():
-                if keys[key]:
-                    new_action = get_action_number(game_name, action_name)
-                    if new_action > 0:  # Only update if it's not NOOP
-                        action = new_action
-                        break
+            if current_time - last_action_time >= action_cooldown:
+                # Get controls for current game
+                game_controls = GAME_CONTROLS.get(game_name, {}).get('controls', {})
+                
+                # Handle common controls first
+                if keys[pygame.K_RETURN]:
+                    action = get_action_number(game_name, 'START')
+                elif keys[pygame.K_SPACE]:
+                    action = get_action_number(game_name, 'FIRE')
+                elif keys[pygame.K_LEFT]:
+                    action = get_action_number(game_name, 'LEFT')
+                elif keys[pygame.K_RIGHT]:
+                    action = get_action_number(game_name, 'RIGHT')
+                elif keys[pygame.K_UP]:
+                    action = get_action_number(game_name, 'UP')
+                elif keys[pygame.K_DOWN]:
+                    action = get_action_number(game_name, 'DOWN')
+                
+                # Handle special game controls
+                if game_name == 'KungFuMaster':
+                    if keys[pygame.K_x]:
+                        action = get_action_number(game_name, 'PUNCH')
+                    elif keys[pygame.K_z]:
+                        action = get_action_number(game_name, 'KICK')
+                
+                elif game_name in ['DonkeyKong', 'MarioBros']:
+                    if keys[pygame.K_SPACE]:
+                        action = get_action_number(game_name, 'JUMP')
+                
+                last_action_time = current_time
             
-            # Execute action
+            # Execute action and play sound
             obs, reward, terminated, truncated, info = env.step(action)
+            sound_manager.play_for_action(action, game_name)
             
             # Render game
             rendered = env.render()

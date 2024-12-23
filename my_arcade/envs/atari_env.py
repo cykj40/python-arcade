@@ -7,22 +7,24 @@ class BaseAtariEnv(Wrapper):
         env = gym.make(
             game_id, 
             render_mode="rgb_array",
-            frameskip=1,
+            frameskip=2,
             repeat_action_probability=0.0,
-            full_action_space=True
+            full_action_space=True,
+            obs_type="rgb"
         )
-        self.frames = []
+        self.frame_buffer = []
+        self.buffer_size = 1
         super().__init__(env)
     
     def step(self, action):
         obs, reward, terminated, truncated, info = self.env.step(action)
-        # Keep last 2 frames for flickering prevention
-        self.frames.append(obs)
-        if len(self.frames) > 2:
-            self.frames.pop(0)
-        # Return max of last 2 frames
-        max_frame = np.maximum(self.frames[-1], self.frames[-2] if len(self.frames) > 1 else self.frames[-1])
-        return max_frame, reward, terminated, truncated, info
+        # Maintain frame buffer for smoother rendering
+        self.frame_buffer.append(obs)
+        if len(self.frame_buffer) > self.buffer_size:
+            self.frame_buffer.pop(0)
+        # Return average of buffered frames for smoother visuals
+        smooth_frame = np.mean(self.frame_buffer, axis=0).astype(np.uint8)
+        return smooth_frame, reward, terminated, truncated, info
 
 # Create custom env classes for each game
 class CustomSpaceInvadersEnv(BaseAtariEnv):
