@@ -6,6 +6,10 @@ A Python-based Atari game emulator using the Arcade Learning Environment (ALE) a
 - Python 3.8 or higher
 - pip (Python package installer)
 
+## Images 
+![2025-01-03](https://github.com/user-attachments/assets/f8c263e0-5fcb-476b-aee9-bb1b33961f8c)
+
+
 ## Installation
 
 1. Create a virtual environment:
