@@ -91,7 +91,6 @@ def play_game(game_id, game_name):
         while running:
             clock.tick(60)
             current_time = pygame.time.get_ticks()
-            frame_start = pygame.time.get_ticks()
             
             # Handle events
             for event in pygame.event.get():
@@ -103,9 +102,6 @@ def play_game(game_id, game_name):
             action = 0  # NOOP default
             
             if current_time - last_action_time >= action_cooldown:
-                # Get controls for current game
-                game_controls = GAME_CONTROLS.get(game_name, {}).get('controls', {})
-                
                 # Handle common controls first
                 if keys[pygame.K_RETURN]:
                     action = get_action_number(game_name, 'START')
@@ -127,9 +123,111 @@ def play_game(game_id, game_name):
                     elif keys[pygame.K_z]:
                         action = get_action_number(game_name, 'KICK')
                 
-                elif game_name in ['DonkeyKong', 'MarioBros']:
+                elif game_name == 'DonkeyKong':
+                    # Handle START first
+                    if keys[pygame.K_RETURN]:
+                        action = get_action_number(game_name, 'START')
+                    # Then handle jump
+                    elif keys[pygame.K_SPACE]:
+                        if keys[pygame.K_RIGHT]:
+                            action = get_action_number(game_name, 'RIGHTFIRE')
+                        elif keys[pygame.K_LEFT]:
+                            action = get_action_number(game_name, 'LEFTFIRE')
+                        elif keys[pygame.K_UP]:
+                            action = get_action_number(game_name, 'UPFIRE')
+                        elif keys[pygame.K_DOWN]:
+                            action = get_action_number(game_name, 'DOWNFIRE')
+                        else:
+                            action = get_action_number(game_name, 'FIRE')
+                    # Handle regular movement if not jumping
+                    elif keys[pygame.K_UP]:
+                        action = get_action_number(game_name, 'UP')
+                    elif keys[pygame.K_DOWN]:
+                        action = get_action_number(game_name, 'DOWN')
+                    elif keys[pygame.K_LEFT]:
+                        action = get_action_number(game_name, 'LEFT')
+                    elif keys[pygame.K_RIGHT]:
+                        action = get_action_number(game_name, 'RIGHT')
+                    
+                    # Handle jump/fire separately
                     if keys[pygame.K_SPACE]:
-                        action = get_action_number(game_name, 'JUMP')
+                        if action != 0:  # If we're already moving
+                            # Convert the movement to its FIRE equivalent
+                            action_name = GAME_CONTROLS['DonkeyKong']['controls'][list(GAME_CONTROLS['DonkeyKong']['controls'].keys())[action-1]][0]
+                            action = get_action_number(game_name, f'{action_name}FIRE')
+                        else:
+                            action = get_action_number(game_name, 'FIRE')
+                
+                elif game_name == 'MarioBros':
+                    # Handle START first
+                    if keys[pygame.K_RETURN]:
+                        action = get_action_number(game_name, 'START')
+                    # Then handle jump combinations
+                    elif keys[pygame.K_SPACE]:
+                        if keys[pygame.K_RIGHT]:
+                            action = get_action_number(game_name, 'RIGHTFIRE')
+                        elif keys[pygame.K_LEFT]:
+                            action = get_action_number(game_name, 'LEFTFIRE')
+                        elif keys[pygame.K_UP]:
+                            action = get_action_number(game_name, 'UPFIRE')
+                        elif keys[pygame.K_DOWN]:
+                            action = get_action_number(game_name, 'DOWNFIRE')
+                        else:
+                            action = get_action_number(game_name, 'FIRE')
+                    # Handle regular movement if not jumping
+                    elif keys[pygame.K_UP]:
+                        action = get_action_number(game_name, 'UP')
+                    elif keys[pygame.K_DOWN]:
+                        action = get_action_number(game_name, 'DOWN')
+                    elif keys[pygame.K_LEFT]:
+                        action = get_action_number(game_name, 'LEFT')
+                    elif keys[pygame.K_RIGHT]:
+                        action = get_action_number(game_name, 'RIGHT')
+                
+                elif game_name == 'Boxing':
+                    # Handle basic movement first
+                    if keys[pygame.K_UP] and keys[pygame.K_RIGHT]:
+                        action = get_action_number(game_name, 'UPRIGHT')
+                    elif keys[pygame.K_UP] and keys[pygame.K_LEFT]:
+                        action = get_action_number(game_name, 'UPLEFT')
+                    elif keys[pygame.K_DOWN] and keys[pygame.K_RIGHT]:
+                        action = get_action_number(game_name, 'DOWNRIGHT')
+                    elif keys[pygame.K_DOWN] and keys[pygame.K_LEFT]:
+                        action = get_action_number(game_name, 'DOWNLEFT')
+                    elif keys[pygame.K_UP]:
+                        action = get_action_number(game_name, 'UP')
+                    elif keys[pygame.K_DOWN]:
+                        action = get_action_number(game_name, 'DOWN')
+                    elif keys[pygame.K_LEFT]:
+                        action = get_action_number(game_name, 'LEFT')
+                    elif keys[pygame.K_RIGHT]:
+                        action = get_action_number(game_name, 'RIGHT')
+                    
+                    # Handle punch (FIRE button)
+                    if keys[pygame.K_SPACE]:
+                        if action != 0:  # If we're moving
+                            action_name = list(GAME_CONTROLS['Boxing']['controls'].values())[action-1][0]
+                            action = get_action_number(game_name, f'{action_name}FIRE')
+                        else:
+                            action = get_action_number(game_name, 'FIRE')
+                
+                elif game_name == 'DemonAttack':
+                    # Handle START first
+                    if keys[pygame.K_RETURN]:
+                        action = get_action_number(game_name, 'START')
+                    # Handle movement with fire combinations
+                    elif keys[pygame.K_SPACE]:
+                        if keys[pygame.K_RIGHT]:
+                            action = get_action_number(game_name, 'RIGHTFIRE')
+                        elif keys[pygame.K_LEFT]:
+                            action = get_action_number(game_name, 'LEFTFIRE')
+                        else:
+                            action = get_action_number(game_name, 'FIRE')
+                    # Handle movement without fire
+                    elif keys[pygame.K_LEFT]:
+                        action = get_action_number(game_name, 'LEFT')
+                    elif keys[pygame.K_RIGHT]:
+                        action = get_action_number(game_name, 'RIGHT')
                 
                 last_action_time = current_time
             

@@ -53,7 +53,9 @@ GAME_CONTROLS = {
         'controls': {
             pygame.K_LEFT: ('LEFT', 'Move left'),
             pygame.K_RIGHT: ('RIGHT', 'Move right'),
-            pygame.K_SPACE: ('JUMP', 'Jump'),
+            pygame.K_UP: ('UP', 'Move up'),
+            pygame.K_DOWN: ('DOWN', 'Move down'),
+            pygame.K_SPACE: ('FIRE', 'Jump/Action'),
             pygame.K_RETURN: ('START', 'Start game')
         }
     },
